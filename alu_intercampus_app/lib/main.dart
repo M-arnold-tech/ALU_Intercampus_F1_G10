@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'onboarding/onboarding_controller.dart';
 import 'onboarding/app_theme.dart';
-
+import 'explore/explore_screen.dart';
 void main() {
   runApp(const AluApp());
 }
@@ -22,7 +22,10 @@ class AluApp extends StatelessWidget {
           surface: AppColors.background,
         ),
       ),
-      home: const OnboardingController(),
+     home: const OnboardingController(),
+routes: {
+  '/explore': (context) => const ExploreScreen(),
+},
     );
   }
 }
