@@ -29,7 +29,7 @@ class OnboardingScaffold extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Top bar: dots + optional skip ──────────────────────
+            //  Top bar: dots + optional skip 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
@@ -68,10 +68,10 @@ class OnboardingScaffold extends StatelessWidget {
               ),
             ),
 
-            // ── Main content ────────────────────────────────────────
+            //  Main content 
             Expanded(child: child),
 
-            // ── Continue button ─────────────────────────────────────
+            //  Continue button 
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
               child: SizedBox(
