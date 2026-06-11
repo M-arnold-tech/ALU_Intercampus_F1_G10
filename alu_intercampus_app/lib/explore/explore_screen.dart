@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import '../onboarding/app_theme.dart';
 import 'event_detail_screen.dart';
 
-// ── Colour palette (matches design mockup) ──────────────────────────────────
-const Color kBg         = Color(0xFF0D1B2A);
-const Color kSurface    = Color(0xFF152236);
-const Color kCard       = Color(0xFF1B2D45);
-const Color kBorder     = Color(0xFF3A4D65);
-const Color kGold       = Color(0xFFC8972E);
-const Color kWhite      = Color(0xFFFFFFFF);
-const Color kMuted      = Color(0xFF7A8FA8);
-const Color kSubtle     = Color(0xFFAABBCC);
+// ── Additional local colours that extend AppColors ───────────────────────────
+const Color _kSurface = Color(0xFF152236);
+const Color _kBorder  = Color(0xFF3A4D65);
+const Color _kMuted   = Color(0xFF7A8FA8);
+const Color _kSubtle  = Color(0xFFAABBCC);
 
 // ── Mock data ────────────────────────────────────────────────────────────────
-class OpportunityItem {
+class _OpportunityItem {
   final String id, title, deadline, campus, tag, imageUrl;
-  const OpportunityItem({
+  const _OpportunityItem({
     required this.id,
     required this.title,
     required this.deadline,
@@ -24,9 +21,9 @@ class OpportunityItem {
   });
 }
 
-class TrendingItem {
+class _TrendingItem {
   final String id, title, date, tag, imageUrl;
-  const TrendingItem({
+  const _TrendingItem({
     required this.id,
     required this.title,
     required this.date,
@@ -36,7 +33,7 @@ class TrendingItem {
 }
 
 const _recommended = [
-  OpportunityItem(
+  _OpportunityItem(
     id: '1',
     title: 'Sustainable Solution Challenge',
     deadline: 'Apply by May 20, 2026',
@@ -44,7 +41,7 @@ const _recommended = [
     tag: 'COMPETITION',
     imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=120&q=80',
   ),
-  OpportunityItem(
+  _OpportunityItem(
     id: '2',
     title: 'Campus Ambassador Program',
     deadline: 'Apply by May 22, 2026',
@@ -52,7 +49,7 @@ const _recommended = [
     tag: 'OPPORTUNITY',
     imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=120&q=80',
   ),
-  OpportunityItem(
+  _OpportunityItem(
     id: '3',
     title: 'ALU Climate Action Week',
     deadline: 'Apply by May 28, 2026',
@@ -60,7 +57,7 @@ const _recommended = [
     tag: 'EVENT',
     imageUrl: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=120&q=80',
   ),
-  OpportunityItem(
+  _OpportunityItem(
     id: '4',
     title: 'Build Your First MVP Workshop',
     deadline: 'Apply by Jun 02, 2026',
@@ -71,28 +68,28 @@ const _recommended = [
 ];
 
 const _trending = [
-  TrendingItem(
+  _TrendingItem(
     id: '5',
     title: 'Community Clean Up',
     date: 'May 18, 2026',
     tag: 'EVENT',
     imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80',
   ),
-  TrendingItem(
+  _TrendingItem(
     id: '6',
     title: 'AI for Social Impact Workshops',
     date: 'Jun 5, 2026',
     tag: 'WORKSHOP',
     imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=300&q=80',
   ),
-  TrendingItem(
+  _TrendingItem(
     id: '7',
     title: 'Design Thinking Bootcamp',
     date: 'May 30, 2026',
     tag: 'WORKSHOP',
     imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=300&q=80',
   ),
-  TrendingItem(
+  _TrendingItem(
     id: '8',
     title: 'Pitch Night',
     date: 'May 24, 2026',
@@ -115,8 +112,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   String _activeFilter = 'All';
   String _searchText   = '';
 
-  // Filter helpers
-  bool _recMatches(OpportunityItem item) {
+  bool _recMatches(_OpportunityItem item) {
     final matchSearch = _searchText.isEmpty ||
         item.title.toLowerCase().contains(_searchText.toLowerCase()) ||
         item.campus.toLowerCase().contains(_searchText.toLowerCase());
@@ -127,12 +123,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return matchSearch && matchFilter;
   }
 
-  bool _trendMatches(TrendingItem item) {
+  bool _trendMatches(_TrendingItem item) {
     final matchSearch = _searchText.isEmpty ||
         item.title.toLowerCase().contains(_searchText.toLowerCase());
     final matchFilter = _activeFilter == 'All' ||
-        (_activeFilter == 'Events'        && item.tag == 'EVENT') ||
-        (_activeFilter == 'Opportunities' && item.tag == 'WORKSHOP');
+        (_activeFilter == 'Events'   && item.tag == 'EVENT') ||
+        (_activeFilter == 'Events'   && item.tag == 'WORKSHOP');
     return matchSearch && matchFilter;
   }
 
@@ -149,10 +145,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final filteredTrend = _trending.where(_trendMatches).toList();
 
     return Scaffold(
-      backgroundColor: kBg,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
+
             // ── Header ──────────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
@@ -164,18 +161,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       child: Container(
                         width: 36, height: 36,
                         decoration: BoxDecoration(
-                          color: kCard, borderRadius: BorderRadius.circular(18),
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                        child: const Icon(Icons.arrow_back, color: kWhite, size: 18),
+                        child: const Icon(Icons.arrow_back, color: AppColors.white, size: 18),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Explore',
-                      style: TextStyle(
-                        color: kWhite, fontSize: 24, fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text('Explore', style: AppTextStyles.heading),
                   ],
                 ),
               ),
@@ -187,17 +180,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: kCard, borderRadius: BorderRadius.circular(12),
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
-                    style: const TextStyle(color: kWhite, fontSize: 15),
+                    style: const TextStyle(color: AppColors.white, fontSize: 15),
                     onChanged: (v) => setState(() => _searchText = v),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Search events, opportunities…',
-                      hintStyle: TextStyle(color: kMuted),
-                      prefixIcon: Icon(Icons.search, color: kMuted),
+                      hintStyle: AppTextStyles.subtitle.copyWith(fontSize: 14),
+                      prefixIcon: const Icon(Icons.search, color: _kMuted),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
@@ -214,21 +208,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   itemCount: _filters.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (_, i) {
-                    final f       = _filters[i];
-                    final active  = _activeFilter == f;
+                    final f      = _filters[i];
+                    final active = _activeFilter == f;
                     return GestureDetector(
                       onTap: () => setState(() => _activeFilter = f),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
-                          color: active ? kWhite : Colors.transparent,
+                          color: active ? AppColors.white : Colors.transparent,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: active ? kWhite : kBorder),
+                          border: Border.all(
+                            color: active ? AppColors.white : _kBorder,
+                          ),
                         ),
                         child: Text(
                           f,
                           style: TextStyle(
-                            color: active ? kBg : kSubtle,
+                            color: active ? AppColors.background : _kSubtle,
                             fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                             fontSize: 14,
                           ),
@@ -240,15 +236,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ),
 
-            // ── "Recommended for you" label ─────────────────────────────────
+            // ── Recommended section label ────────────────────────────────────
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 22, 16, 10),
                 child: Text(
                   'RECOMMENDED FOR YOU',
                   style: TextStyle(
-                    color: kWhite, fontSize: 13,
-                    fontWeight: FontWeight.w700, letterSpacing: 0.8,
+                    color: AppColors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
                   ),
                 ),
               ),
@@ -259,9 +257,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
               delegate: SliverChildBuilderDelegate(
                 (_, i) {
                   if (filteredRec.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('No results.', style: TextStyle(color: kMuted)),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('No results.', style: AppTextStyles.subtitle),
                     );
                   }
                   final item = filteredRec[i];
@@ -278,9 +276,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         'location': 'Main Hall',
                         'tag': item.tag,
                         'categories': [item.tag],
-                        'going': 0,
-                        'interested': 0,
-                        'description': 'More details coming soon.',
+                        'going': 52,
+                        'interested': 12,
+                        'description':
+                            'Join us for this exciting opportunity at ALU. Connect with peers, '
+                            'learn new skills, and make an impact on your campus and beyond.',
                         'imageUrl': item.imageUrl,
                       }),
                     ),
@@ -290,15 +290,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ),
 
-            // ── "Trending events" label ─────────────────────────────────────
+            // ── Trending section label ───────────────────────────────────────
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
                 child: Text(
                   'TRENDING EVENTS',
                   style: TextStyle(
-                    color: kWhite, fontSize: 13,
-                    fontWeight: FontWeight.w700, letterSpacing: 0.8,
+                    color: AppColors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
                   ),
                 ),
               ),
@@ -328,9 +330,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         'location': 'TBD',
                         'tag': item.tag,
                         'categories': [item.tag],
-                        'going': 0,
-                        'interested': 0,
-                        'description': 'More details coming soon.',
+                        'going': 52,
+                        'interested': 12,
+                        'description':
+                            'Join us for this exciting event at ALU. Connect with peers, '
+                            'learn new skills, and make an impact on your campus and beyond.',
                         'imageUrl': item.imageUrl,
                       }),
                     );
@@ -346,9 +350,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 }
 
-// ── Recommended card widget ─────────────────────────────────────────────────
+// ── Recommended card ─────────────────────────────────────────────────────────
 class _RecommendedCard extends StatelessWidget {
-  final OpportunityItem item;
+  final _OpportunityItem item;
   final VoidCallback onTap;
   const _RecommendedCard({required this.item, required this.onTap});
 
@@ -359,7 +363,8 @@ class _RecommendedCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: kSurface, borderRadius: BorderRadius.circular(14),
+          color: _kSurface,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           children: [
@@ -371,8 +376,9 @@ class _RecommendedCard extends StatelessWidget {
                 width: 64, height: 64,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  width: 64, height: 64, color: kCard,
-                  child: const Icon(Icons.image, color: kMuted),
+                  width: 64, height: 64,
+                  color: AppColors.cardBackground,
+                  child: const Icon(Icons.image, color: _kMuted),
                 ),
               ),
             ),
@@ -387,30 +393,35 @@ class _RecommendedCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: kWhite, fontSize: 14, fontWeight: FontWeight.w600,
+                      color: AppColors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${item.deadline} · ${item.campus}',
-                    style: const TextStyle(color: kMuted, fontSize: 12),
+                    style: AppTextStyles.subtitle.copyWith(fontSize: 12),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            // Tag
+            // Tag badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: kCard,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: kBorder),
+                border: Border.all(color: _kBorder),
               ),
               child: Text(
                 item.tag,
                 style: const TextStyle(
-                  color: kWhite, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.4,
+                  color: AppColors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
                 ),
               ),
             ),
@@ -421,9 +432,9 @@ class _RecommendedCard extends StatelessWidget {
   }
 }
 
-// ── Trending card widget ────────────────────────────────────────────────────
+// ── Trending card ─────────────────────────────────────────────────────────────
 class _TrendingCard extends StatelessWidget {
-  final TrendingItem item;
+  final _TrendingItem item;
   final VoidCallback onTap;
   const _TrendingCard({required this.item, required this.onTap});
 
@@ -439,15 +450,16 @@ class _TrendingCard extends StatelessWidget {
             Image.network(
               item.imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: kCard),
+              errorBuilder: (_, __, ___) =>
+                  Container(color: AppColors.cardBackground),
             ),
-            // Gradient overlay
+            // Dark gradient so text is readable
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color(0xCC0D1B2A)],
+                  colors: [Colors.transparent, Color(0xCC0B1437)],
                   stops: [0.45, 1.0],
                 ),
               ),
@@ -463,13 +475,15 @@ class _TrendingCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: kWhite, fontSize: 13, fontWeight: FontWeight.w600,
+                      color: AppColors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     item.date,
-                    style: const TextStyle(color: kSubtle, fontSize: 11),
+                    style: AppTextStyles.subtitle.copyWith(fontSize: 11),
                   ),
                 ],
               ),
