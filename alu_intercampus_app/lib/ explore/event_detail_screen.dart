@@ -1,439 +1,495 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../onboarding/app_theme.dart';
+import 'event_detail_screen.dart';
 
-// ── Colour palette (shared with ExploreScreen) ───────────────────────────────
-const Color kBg      = Color(0xFF0D1B2A);
-const Color kSurface = Color(0xFF152236);
-const Color kCard    = Color(0xFF1B2D45);
-const Color kBorder  = Color(0xFF3A4D65);
-const Color kGold    = Color(0xFFC8972E);
-const Color kWhite   = Color(0xFFFFFFFF);
-const Color kMuted   = Color(0xFF7A8FA8);
-const Color kSubtle  = Color(0xFFAABBCC);
-const Color kDivider = Color(0xFF1F3450);
+// ── Additional local colours that extend AppColors ───────────────────────────
+const Color _kSurface = Color(0xFF152236);
+const Color _kBorder  = Color(0xFF3A4D65);
+const Color _kMuted   = Color(0xFF7A8FA8);
+const Color _kSubtle  = Color(0xFFAABBCC);
 
-// ── Screen ───────────────────────────────────────────────────────────────────
-class EventDetailScreen extends StatefulWidget {
-  /// Accepts a Map of event data passed from ExploreScreen or any other screen.
-  /// All keys are optional — sensible defaults are provided.
-  final Map<String, dynamic> item;
-
-  const EventDetailScreen({super.key, required this.item});
-
-  @override
-  State<EventDetailScreen> createState() => _EventDetailScreenState();
+// ── Mock data ────────────────────────────────────────────────────────────────
+class _OpportunityItem {
+  final String id, title, deadline, campus, tag, imageUrl;
+  const _OpportunityItem({
+    required this.id,
+    required this.title,
+    required this.deadline,
+    required this.campus,
+    required this.tag,
+    required this.imageUrl,
+  });
 }
 
-class _EventDetailScreenState extends State<EventDetailScreen> {
-  // RSVP state: 'none' | 'going' | 'interested'
-  String _rsvpState = 'none';
-  late int _goingCount;
-  late int _interestedCount;
+class _TrendingItem {
+  final String id, title, date, tag, imageUrl;
+  const _TrendingItem({
+    required this.id,
+    required this.title,
+    required this.date,
+    required this.tag,
+    required this.imageUrl,
+  });
+}
+
+const _recommended = [
+  _OpportunityItem(
+    id: '1',
+    title: 'Sustainable Solution Challenge',
+    deadline: 'Apply by May 20, 2026',
+    campus: 'Mauritius Campus',
+    tag: 'COMPETITION',
+    imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=120&q=80',
+  ),
+  _OpportunityItem(
+    id: '2',
+    title: 'Campus Ambassador Program',
+    deadline: 'Apply by May 22, 2026',
+    campus: 'All Campus',
+    tag: 'OPPORTUNITY',
+    imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=120&q=80',
+  ),
+  _OpportunityItem(
+    id: '3',
+    title: 'ALU Climate Action Week',
+    deadline: 'Apply by May 28, 2026',
+    campus: 'Both Campus',
+    tag: 'EVENT',
+    imageUrl: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=120&q=80',
+  ),
+  _OpportunityItem(
+    id: '4',
+    title: 'Build Your First MVP Workshop',
+    deadline: 'Apply by Jun 02, 2026',
+    campus: 'All Campus',
+    tag: 'EVENT',
+    imageUrl: 'https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=120&q=80',
+  ),
+];
+
+const _trending = [
+  _TrendingItem(
+    id: '5',
+    title: 'Community Clean Up',
+    date: 'May 18, 2026',
+    tag: 'EVENT',
+    imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80',
+  ),
+  _TrendingItem(
+    id: '6',
+    title: 'AI for Social Impact Workshops',
+    date: 'Jun 5, 2026',
+    tag: 'WORKSHOP',
+    imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=300&q=80',
+  ),
+  _TrendingItem(
+    id: '7',
+    title: 'Design Thinking Bootcamp',
+    date: 'May 30, 2026',
+    tag: 'WORKSHOP',
+    imageUrl: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=300&q=80',
+  ),
+  _TrendingItem(
+    id: '8',
+    title: 'Pitch Night',
+    date: 'May 24, 2026',
+    tag: 'EVENT',
+    imageUrl: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=300&q=80',
+  ),
+];
+
+const _filters = ['All', 'Events', 'Opportunities', 'Clubs'];
+
+// ── Screen ───────────────────────────────────────────────────────────────────
+class ExploreScreen extends StatefulWidget {
+  const ExploreScreen({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    _goingCount      = (widget.item['going']      as int?) ?? 128;
-    _interestedCount = (widget.item['interested'] as int?) ?? 12;
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  String _activeFilter = 'All';
+  String _searchText   = '';
+
+  bool _recMatches(_OpportunityItem item) {
+    final matchSearch = _searchText.isEmpty ||
+        item.title.toLowerCase().contains(_searchText.toLowerCase()) ||
+        item.campus.toLowerCase().contains(_searchText.toLowerCase());
+    final matchFilter = _activeFilter == 'All' ||
+        (_activeFilter == 'Events'        && item.tag == 'EVENT') ||
+        (_activeFilter == 'Opportunities' && item.tag == 'OPPORTUNITY') ||
+        (_activeFilter == 'Clubs'         && item.tag == 'CLUB');
+    return matchSearch && matchFilter;
   }
 
-  void _handleRsvp() {
-    setState(() {
-      if (_rsvpState == 'going') {
-        _rsvpState = 'none';
-        _goingCount--;
-      } else {
-        if (_rsvpState == 'interested') _interestedCount--;
-        _rsvpState = 'going';
-        _goingCount++;
-      }
-    });
+  bool _trendMatches(_TrendingItem item) {
+    final matchSearch = _searchText.isEmpty ||
+        item.title.toLowerCase().contains(_searchText.toLowerCase());
+    final matchFilter = _activeFilter == 'All' ||
+        (_activeFilter == 'Events'   && item.tag == 'EVENT') ||
+        (_activeFilter == 'Events'   && item.tag == 'WORKSHOP');
+    return matchSearch && matchFilter;
   }
 
-  void _handleInterested() {
-    setState(() {
-      if (_rsvpState == 'interested') {
-        _rsvpState = 'none';
-        _interestedCount--;
-      } else {
-        if (_rsvpState == 'going') _goingCount--;
-        _rsvpState = 'interested';
-        _interestedCount++;
-      }
-    });
-  }
-
-  Future<void> _handleShare() async {
-    final title  = widget.item['title']  ?? 'Event';
-    final date   = widget.item['date']   ?? '';
-    final campus = widget.item['campus'] ?? '';
-    await Clipboard.setData(
-      ClipboardData(text: 'Check out "$title" on $date at $campus!'),
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Link copied to clipboard'),
-        backgroundColor: Color(0xFF1B2D45),
-        duration: Duration(seconds: 2),
-      ),
+  void _openDetail(Map<String, dynamic> data) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EventDetailScreen(item: data)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Pull data with safe defaults
-    final title       = widget.item['title']       as String? ?? 'Event';
-    final date        = widget.item['date']        as String? ?? '';
-    final time        = widget.item['time']        as String? ?? '09:00 AM';
-    final campus      = widget.item['campus']      as String? ?? '';
-    final location    = widget.item['location']    as String? ?? '';
-    final description = widget.item['description'] as String? ?? '';
-    final imageUrl    = widget.item['imageUrl']    as String? ?? '';
-    final categories  = (widget.item['categories'] as List<dynamic>?)
-        ?.cast<String>() ?? ['Event'];
-
-    // Mock avatar URLs (shows 4 stacked profile pictures)
-    const avatarUrls = [
-      'https://i.pravatar.cc/40?img=1',
-      'https://i.pravatar.cc/40?img=2',
-      'https://i.pravatar.cc/40?img=3',
-      'https://i.pravatar.cc/40?img=4',
-    ];
+    final filteredRec   = _recommended.where(_recMatches).toList();
+    final filteredTrend = _trending.where(_trendMatches).toList();
 
     return Scaffold(
-      backgroundColor: kBg,
+      backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Hero image ────────────────────────────────────────────────
-              Stack(
-                children: [
-                  // Image
-                  SizedBox(
-                    width: double.infinity,
-                    height: 260,
-                    child: imageUrl.isNotEmpty
-                        ? Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                Container(color: kCard),
-                          )
-                        : Container(color: kCard),
-                  ),
-                  // Back button
-                  Positioned(
-                    top: 16, left: 16,
-                    child: GestureDetector(
+        child: CustomScrollView(
+          slivers: [
+
+            // ── Header ──────────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(
+                  children: [
+                    GestureDetector(
                       onTap: () => Navigator.maybePop(context),
                       child: Container(
                         width: 36, height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.black54,
+                          color: AppColors.cardBackground,
                           borderRadius: BorderRadius.circular(18),
                         ),
-                        child: const Icon(Icons.arrow_back, color: kWhite, size: 18),
+                        child: const Icon(Icons.arrow_back, color: AppColors.white, size: 18),
                       ),
                     ),
-                  ),
-                  // Share button
-                  Positioned(
-                    top: 16, right: 16,
-                    child: GestureDetector(
-                      onTap: _handleShare,
-                      child: Container(
-                        width: 36, height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: const Icon(Icons.share_outlined, color: kWhite, size: 18),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // ── Body ──────────────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    // Category chips
-                    Wrap(
-                      spacing: 8,
-                      children: categories.map((cat) => _CategoryChip(label: cat)).toList(),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Title
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: kWhite, fontSize: 22,
-                        fontWeight: FontWeight.w700, height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Info card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: kSurface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          _InfoRow(
-                            icon: Icons.calendar_today_outlined,
-                            main: date,
-                            sub: time,
-                          ),
-                          const _Divider(),
-                          _InfoRow(
-                            icon: Icons.location_on_outlined,
-                            main: campus,
-                            sub: location,
-                          ),
-                          const _Divider(),
-                          _InfoRow(
-                            icon: Icons.group_outlined,
-                            main: '$_goingCount going',
-                            sub: '$_interestedCount interested',
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Description
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        color: kSubtle, fontSize: 14, height: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Avatar row
-                    Row(
-                      children: [
-                        _AvatarStack(avatarUrls: avatarUrls),
-                        const SizedBox(width: 12),
-                        Text(
-                          '${_goingCount > avatarUrls.length ? _goingCount - avatarUrls.length : _goingCount} going',
-                          style: const TextStyle(color: kSubtle, fontSize: 13),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '$_interestedCount interested',
-                          style: const TextStyle(color: kMuted, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // RSVP + Interested buttons
-                    Row(
-                      children: [
-                        // RSVP
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _handleRsvp,
-                            child: Container(
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: _rsvpState == 'going'
-                                    ? const Color(0xFFE0AE40)
-                                    : kGold,
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                _rsvpState == 'going' ? '✓  GOING' : 'RSVP',
-                                style: TextStyle(
-                                  color: _rsvpState == 'going' ? kBg : kWhite,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Interested
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _handleInterested,
-                            child: Container(
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: _rsvpState == 'interested'
-                                    ? kGold.withOpacity(0.15)
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(
-                                  color: kGold,
-                                  width: 1.5,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                _rsvpState == 'interested'
-                                    ? '✓  Interested'
-                                    : 'Interested',
-                                style: TextStyle(
-                                  color: _rsvpState == 'interested'
-                                      ? const Color(0xFFE0AE40)
-                                      : kGold,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // See all RSVPs
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('View your RSVPs in your Profile'),
-                            backgroundColor: Color(0xFF1B2D45),
-                            duration: Duration(seconds: 2),
-                          ),
-                        ),
-                        child: const Text(
-                          'See all my RSVPs',
-                          style: TextStyle(
-                            color: kMuted,
-                            fontSize: 14,
-                            decoration: TextDecoration.underline,
-                            decorationColor: kMuted,
-                          ),
-                        ),
-                      ),
-                    ),
+                    const SizedBox(width: 12),
+                    Text('Explore', style: AppTextStyles.heading),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // ── Search bar ──────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextField(
+                    style: const TextStyle(color: AppColors.white, fontSize: 15),
+                    onChanged: (v) => setState(() => _searchText = v),
+                    decoration: InputDecoration(
+                      hintText: 'Search events, opportunities…',
+                      hintStyle: AppTextStyles.subtitle.copyWith(fontSize: 14),
+                      prefixIcon: const Icon(Icons.search, color: _kMuted),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Filter pills ────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 52,
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _filters.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) {
+                    final f      = _filters[i];
+                    final active = _activeFilter == f;
+                    return GestureDetector(
+                      onTap: () => setState(() => _activeFilter = f),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: active ? AppColors.white : Colors.transparent,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: active ? AppColors.white : _kBorder,
+                          ),
+                        ),
+                        child: Text(
+                          f,
+                          style: TextStyle(
+                            color: active ? AppColors.background : _kSubtle,
+                            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            // ── Recommended section label ────────────────────────────────────
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 22, 16, 10),
+                child: Text(
+                  'RECOMMENDED FOR YOU',
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Recommended list ─────────────────────────────────────────────
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (_, i) {
+                  if (filteredRec.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('No results.', style: AppTextStyles.subtitle),
+                    );
+                  }
+                  final item = filteredRec[i];
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    child: _RecommendedCard(
+                      item: item,
+                      onTap: () => _openDetail({
+                        'id': item.id,
+                        'title': item.title,
+                        'date': item.deadline,
+                        'time': '09:00 AM',
+                        'campus': item.campus,
+                        'location': 'Main Hall',
+                        'tag': item.tag,
+                        'categories': [item.tag],
+                        'going': 52,
+                        'interested': 12,
+                        'description':
+                            'Join us for this exciting opportunity at ALU. Connect with peers, '
+                            'learn new skills, and make an impact on your campus and beyond.',
+                        'imageUrl': item.imageUrl,
+                      }),
+                    ),
+                  );
+                },
+                childCount: filteredRec.isEmpty ? 1 : filteredRec.length,
+              ),
+            ),
+
+            // ── Trending section label ───────────────────────────────────────
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
+                child: Text(
+                  'TRENDING EVENTS',
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Trending 2-column grid ───────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.85,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (_, i) {
+                    final item = filteredTrend[i];
+                    return _TrendingCard(
+                      item: item,
+                      onTap: () => _openDetail({
+                        'id': item.id,
+                        'title': item.title,
+                        'date': item.date,
+                        'time': '09:00 AM',
+                        'campus': 'All Campus',
+                        'location': 'TBD',
+                        'tag': item.tag,
+                        'categories': [item.tag],
+                        'going': 52,
+                        'interested': 12,
+                        'description':
+                            'Join us for this exciting event at ALU. Connect with peers, '
+                            'learn new skills, and make an impact on your campus and beyond.',
+                        'imageUrl': item.imageUrl,
+                      }),
+                    );
+                  },
+                  childCount: filteredTrend.length,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// ── Helper widgets ───────────────────────────────────────────────────────────
-class _CategoryChip extends StatelessWidget {
-  final String label;
-  const _CategoryChip({required this.label});
+// ── Recommended card ─────────────────────────────────────────────────────────
+class _RecommendedCard extends StatelessWidget {
+  final _OpportunityItem item;
+  final VoidCallback onTap;
+  const _RecommendedCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: kCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: kBorder),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(color: kSubtle, fontSize: 13, fontWeight: FontWeight.w500),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String main;
-  final String sub;
-  const _InfoRow({required this.icon, required this.main, required this.sub});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(
-              color: kCard, borderRadius: BorderRadius.circular(10),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _kSurface,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                item.imageUrl,
+                width: 64, height: 64,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 64, height: 64,
+                  color: AppColors.cardBackground,
+                  child: const Icon(Icons.image, color: _kMuted),
+                ),
+              ),
             ),
-            child: Icon(icon, color: kSubtle, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(main, style: const TextStyle(color: kWhite, fontSize: 15, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 2),
-              Text(sub,  style: const TextStyle(color: kMuted,  fontSize: 13)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Divider extends StatelessWidget {
-  const _Divider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Divider(color: kDivider, thickness: 1, height: 1);
-  }
-}
-
-class _AvatarStack extends StatelessWidget {
-  final List<String> avatarUrls;
-  const _AvatarStack({required this.avatarUrls});
-
-  @override
-  Widget build(BuildContext context) {
-    const double size = 34;
-    const double overlap = 12;
-    final count = avatarUrls.length.clamp(0, 4);
-    final width = size + (count - 1) * (size - overlap);
-
-    return SizedBox(
-      width: width,
-      height: size,
-      child: Stack(
-        children: List.generate(count, (i) {
-          return Positioned(
-            left: i * (size - overlap),
-            child: Container(
+            const SizedBox(width: 12),
+            // Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${item.deadline} · ${item.campus}',
+                    style: AppTextStyles.subtitle.copyWith(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Tag badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: kBg, width: 2),
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _kBorder),
               ),
-              child: CircleAvatar(
-                radius: size / 2,
-                backgroundImage: NetworkImage(avatarUrls[i]),
-                backgroundColor: kCard,
+              child: Text(
+                item.tag,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                ),
               ),
             ),
-          );
-        }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Trending card ─────────────────────────────────────────────────────────────
+class _TrendingCard extends StatelessWidget {
+  final _TrendingItem item;
+  final VoidCallback onTap;
+  const _TrendingCard({required this.item, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              item.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  Container(color: AppColors.cardBackground),
+            ),
+            // Dark gradient so text is readable
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Color(0xCC0B1437)],
+                  stops: [0.45, 1.0],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 10, right: 10, bottom: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    item.date,
+                    style: AppTextStyles.subtitle.copyWith(fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
