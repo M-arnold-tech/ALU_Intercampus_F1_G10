@@ -28,7 +28,7 @@ class OnboardingScreen2 extends StatelessWidget {
                 height: 200,
                 color: AppColors.cardBackground,
                 child: Image.asset(
-                  'assets/images/networking.jpg',
+                  'assets/images/connecting.jpg',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const _PlaceholderNetworking(),
                 ),

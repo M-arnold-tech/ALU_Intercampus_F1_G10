@@ -4,6 +4,7 @@ import 'package:alu_intercampus_app/onboarding/onboarding_screen2.dart';
 import 'package:alu_intercampus_app/onboarding/onboarding_screen3.dart';
 import 'package:alu_intercampus_app/onboarding/onboarding_screen4.dart';
 import 'package:alu_intercampus_app/onboarding/onboarding_screen5.dart';
+import 'package:alu_intercampus_app/screens/Main nav.dart';
 
 /// Root widget that hosts all 5 onboarding screens inside a [PageView].
 /// Replace the `_finishOnboarding` body with your actual navigation logic
@@ -32,10 +33,10 @@ class _OnboardingControllerState extends State<OnboardingController> {
   }
 
   void _finishOnboarding() {
-    // TODO: mark onboarding as complete (e.g. SharedPreferences)
-    // then navigate to the main app screen:
-    // Navigator.pushReplacementNamed(context, '/home');
-    debugPrint('Onboarding complete — navigate to home!');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const MainNav()),
+    );
   }
 
   @override

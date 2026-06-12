@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'onboarding/onboarding_controller.dart';
 import 'onboarding/app_theme.dart';
-import 'explore/explore_screen.dart';
+import 'screens/login_screen.dart';
+
 void main() {
   runApp(const AluApp());
 }
@@ -12,7 +12,7 @@ class AluApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ALU',
+      title: 'ALU Intercampus Connect',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,
@@ -22,10 +22,7 @@ class AluApp extends StatelessWidget {
           surface: AppColors.background,
         ),
       ),
-     home: const OnboardingController(),
-routes: {
-  '/explore': (context) => const ExploreScreen(),
-},
+      home: const LoginScreen(), // ← starts here now
     );
   }
 }
