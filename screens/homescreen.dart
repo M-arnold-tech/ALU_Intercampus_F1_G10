@@ -40,6 +40,8 @@ class HomeScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // We accessed the singleton AuthService here to pull the user's first name,
+                      // ensuring the UI felt personalized immediately upon login.
                       Text('Hi, ${AuthService.instance.firstName}',
                           style: const TextStyle(
                               fontSize: 22,
@@ -151,6 +153,8 @@ class HomeScreen extends StatelessWidget {
                           'assets/images/company-employee-presenting-business-strategy-with-charts-monitor-planning-project-workmates-analyzing-financial-statistics-display-working-together-company-development.jpg',
                           fit: BoxFit.cover,
                           width: double.infinity,
+                          // We implemented this errorBuilder so that if an image failed to load,
+                          // the app showed a placeholder icon instead of crashing the UI.
                           errorBuilder: (_, __, ___) => Container(
                             color: const Color(0xFF1E2D55),
                             child: const Center(
@@ -222,6 +226,8 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // We used this _OpportunityTile helper component to ensure that
+              // all items in our list remained visually consistent and easy to update.
               _OpportunityTile(
                 imageAsset: 'assets/images/pitching_a_business.jpeg',
                 title: 'Sustainable Solution Challenge',
@@ -319,6 +325,8 @@ class _OpportunityTile extends StatelessWidget {
               width: 56,
               height: 56,
               fit: BoxFit.cover,
+              // Similar to our main card, we added an error handler here to 
+              // preserve layout integrity even if individual assets failed to load.
               errorBuilder: (_, __, ___) => Container(
                 width: 56,
                 height: 56,

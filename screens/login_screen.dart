@@ -11,12 +11,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Regex validators
+  // We defined these Regex constants to enforce strict validation rules.
+  // This ensured that users could only proceed if their email matched the 
+  // expected corporate or domain formats required by our authentication backend.
   static final RegExp _aluEmailRegex =
       RegExp(r'^[a-zA-Z0-9._%+\-]+@alustudent\.com$');
   static final RegExp _gmailRegex =
       RegExp(r'^[a-zA-Z0-9._%+\-]+@gmail\.com$');
 
+  /// Displays a bottom sheet for user input. We used this bottom sheet approach 
+  /// to keep the login flow within the current context, which provided a more 
+  /// seamless experience than navigating to a separate full-page login screen.
   void _showEmailDialog({required bool isAlu}) {
     final controller = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -28,6 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
+          // We added viewInsets.bottom padding so the modal would rise 
+          // above the keyboard, preventing the input fields from being hidden.
           padding: EdgeInsets.only(
               bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Container(
@@ -43,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle bar
+                  // Handle bar to indicate the sheet can be dismissed by dragging.
                   Center(
                     child: Container(
                       width: 40,
@@ -56,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Title
+                  // Dynamic title to provide immediate context on what account type is being used.
                   Text(
                     isAlu
                         ? 'Sign in with ALU Account'
@@ -79,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Email field
+                  // Email field with input decoration that matches our brand theme.
                   TextFormField(
                     controller: controller,
                     keyboardType: TextInputType.emailAddress,
@@ -120,6 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (val == null || val.trim().isEmpty) {
                         return 'Please enter your email address';
                       }
+                      // We applied the Regex here to ensure the data is sanitized 
+                      // and correctly formatted before calling our sign-in service.
                       if (isAlu && !_aluEmailRegex.hasMatch(val.trim())) {
                         return 'Email must end with .alustudent.com\n(e.g. name@campus.alustudent.com)';
                       }
@@ -132,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Password field
+                  // Password field with state management for password visibility toggle.
                   TextFormField(
                     obscureText: obscure == false ? true : false,
                     style: const TextStyle(color: Colors.white),
@@ -190,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 8),
 
-                  // Forgot password
+                  // Forgot password link placeholder for future navigation.
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
@@ -203,14 +212,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Continue button
+                  // Submit button: Triggers our singleton auth service 
+                  // to persist the user session globally across the application.
                   SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
-                          // ── Store user info globally ──────────────
                           AuthService.instance
                               .signIn(controller.text.trim());
                           Navigator.pop(ctx);
@@ -239,6 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Navigation helper to redirect the user to the onboarding flow after successful sign-in.
   void _goToOnboarding() {
     Navigator.pushReplacement(
       context,
@@ -257,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Spacer(flex: 3),
 
-              // ── App title ──────────────────────────────────────────
+              // Hero section: Designed to establish brand identity prominently.
               const Text(
                 'ALU',
                 style: TextStyle(
@@ -288,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const Spacer(flex: 2),
 
-              // ── Sign in with ALU Account ───────────────────────────
+              // Main action button for ALU students to initiate the primary auth flow.
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -315,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 32),
 
-              // ── or continue with ───────────────────────────────────
+              // Secondary methods divider.
               const Text(
                 'or continue with',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
@@ -323,17 +333,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 24),
 
-              // ── Social buttons ─────────────────────────────────────
+              // Social authentication icons. 
+              // We separated these into buttons to provide a clear, distinct choice.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Google — triggers Gmail validation
                   _SocialButton(
                     onTap: () => _showEmailDialog(isAlu: false),
                     child: const _GoogleLogo(),
                   ),
                   const SizedBox(width: 20),
-                  // Apple — goes straight through (no email check needed)
                   _SocialButton(
                     onTap: _goToOnboarding,
                     child: const Icon(Icons.apple,
@@ -344,7 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const Spacer(flex: 3),
 
-              // ── New here? Create account ───────────────────────────
+              // Call-to-action for new users to register.
               Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: GestureDetector(
@@ -375,8 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
+// Reusable UI components used to maintain design consistency across the login screen.
 class _SocialButton extends StatelessWidget {
   final VoidCallback onTap;
   final Widget child;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:alu_intercampus_app/onboarding/app_theme.dart';
 
+// We defined MentorshipScreen as a StatefulWidget to manage the local state
+// of the mentorship list, such as the refresh status and the set of requested mentors.
 class MentorshipScreen extends StatefulWidget {
   const MentorshipScreen({super.key});
 
@@ -9,8 +11,11 @@ class MentorshipScreen extends StatefulWidget {
 }
 
 class _MentorshipScreenState extends State<MentorshipScreen> {
+  // _refreshing tracks the loading state during the simulated refresh action.
   bool _refreshing = false;
 
+  // We defined a private _Mentor model class at the bottom to structure our data,
+  // making it easier to map over the list to generate UI components.
   final List<_Mentor> _mentors = [
     _Mentor(
       name: 'Dr. Amani Okafor',
@@ -42,8 +47,11 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
     ),
   ];
 
+  // Using a Set for requested mentors ensures efficient O(1) lookups 
+  // to check if a mentor has already been requested, preventing UI bugs.
   final Set<String> _requested = {};
 
+  // This method simulates a network request to fetch new AI-matched mentors.
   Future<void> _refresh() async {
     setState(() => _refreshing = true);
     await Future.delayed(const Duration(seconds: 1));
@@ -58,7 +66,7 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //  App bar 
+            // Custom App Bar section for consistent navigation and title display.
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -89,13 +97,15 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
 
             Divider(height: 1, color: Colors.white.withOpacity(0.08)),
 
+            // The main list area is wrapped in a SingleChildScrollView
+            // to ensure it handles overflow gracefully on smaller screens.
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //  Smart matching banner
+                    // Smart matching banner: Provides immediate value proposition.
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
@@ -108,7 +118,7 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
                           Container(
                             width: 40,
                             height: 40,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Colors.white12,
                               shape: BoxShape.circle,
                             ),
@@ -134,6 +144,7 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
+                          // Refresh button with conditional loading state.
                           GestureDetector(
                             onTap: _refresh,
                             child: Container(
@@ -162,7 +173,7 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
 
                     const SizedBox(height: 24),
 
-                    //  TOP MATCHES label 
+                    // Section header for the list of matches.
                     const Text('TOP MATCHES',
                         style: TextStyle(
                             color: Colors.white70,
@@ -172,7 +183,7 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
 
                     const SizedBox(height: 12),
 
-                    //  Mentor cards 
+                    // Mapping over the list to generate an _MentorCard for every mentor.
                     ..._mentors.map((m) => _MentorCard(
                           mentor: m,
                           isRequested: _requested.contains(m.name),
@@ -190,8 +201,7 @@ class _MentorshipScreenState extends State<MentorshipScreen> {
   }
 }
 
-//  Data model
-
+// Data model representing an alumni mentor's profile information.
 class _Mentor {
   final String name;
   final String role;
@@ -208,7 +218,7 @@ class _Mentor {
   });
 }
 
-//  Card 
+// Reusable card widget for displaying individual mentor details.
 class _MentorCard extends StatelessWidget {
   final _Mentor mentor;
   final bool isRequested;
@@ -232,11 +242,10 @@ class _MentorCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //  Header row 
+          // Mentor header: Shows image, name, role, and match percentage.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
               CircleAvatar(
                 radius: 26,
                 backgroundColor: Colors.grey.shade700,
@@ -268,7 +277,7 @@ class _MentorCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Match badge
+              // Match badge: Visually highlights the compatibility score.
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 4),
@@ -287,7 +296,7 @@ class _MentorCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          //  Interest tags 
+          // Interest tags: Displayed using a Wrap to handle different tag lengths.
           Wrap(
             spacing: 8,
             children: mentor.tags
@@ -307,7 +316,7 @@ class _MentorCard extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          // Action buttons
+          // Action buttons: Allows the user to request a mentor or view their full profile.
           Row(
             children: [
               Expanded(

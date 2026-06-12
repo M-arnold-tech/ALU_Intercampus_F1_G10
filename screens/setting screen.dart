@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:alu_intercampus_app/onboarding/app_theme.dart';
 import 'package:alu_intercampus_app/screens/login_screen.dart';
 
+// SettingsScreen provides a structured UI for user management, app preferences,
+// and privacy settings, allowing users to control their account state.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -13,7 +15,7 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //  App bar 
+            // Custom App Bar section for consistent navigation.
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -33,6 +35,7 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
 
+            // Main scrollable area containing all settings grouped by category.
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -41,7 +44,7 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 8),
 
-                    //  ACCOUNT 
+                    // ACCOUNT section handles profile and campus-specific configurations.
                     _SectionLabel('ACCOUNT'),
                     _SettingsGroup(items: [
                       _SettingsItem(
@@ -59,7 +62,7 @@ class SettingsScreen extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    //  PREFERENCES 
+                    // PREFERENCES section for visual and notification customizations.
                     _SectionLabel('PREFERENCES'),
                     _SettingsGroup(items: [
                       _SettingsItem(
@@ -77,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    //  PRIVACY 
+                    // PRIVACY section for sensitive data handling.
                     _SectionLabel('PRIVACY'),
                     _SettingsGroup(items: [
                       _SettingsItem(
@@ -90,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
 
                     const SizedBox(height: 24),
 
-                    // Sign out 
+                    // Logout action button: Destructive action styled clearly to differentiate from navigation.
                     SizedBox(
                       width: double.infinity,
                       height: 54,
@@ -123,6 +126,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  // Confirmation dialog to prevent accidental sign-out.
   void _confirmSignOut(BuildContext context) {
     showDialog(
       context: context,
@@ -142,6 +146,8 @@ class SettingsScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
+              // Sign out logic: Pop the dialog and clear the entire navigation stack
+              // to ensure the user cannot return to the settings screen after signing out.
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
                 context,
@@ -158,8 +164,7 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-//  Helpers 
-
+// Reusable label component for section headers.
 class _SectionLabel extends StatelessWidget {
   final String text;
   const _SectionLabel(this.text);
@@ -178,6 +183,7 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
+// Container wrapper to visually group related settings items together.
 class _SettingsGroup extends StatelessWidget {
   final List<_SettingsItem> items;
   const _SettingsGroup({required this.items});
@@ -194,6 +200,7 @@ class _SettingsGroup extends StatelessWidget {
   }
 }
 
+// Individual settings row with icon, label, and navigation arrow.
 class _SettingsItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -232,6 +239,7 @@ class _SettingsItem extends StatelessWidget {
             ),
           ),
         ),
+        // Conditional divider for list styling.
         if (showDivider)
           Divider(
               height: 1,
