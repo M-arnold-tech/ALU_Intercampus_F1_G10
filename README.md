@@ -1,4 +1,3 @@
-# ALU_Intercampus_F1_G10
 ```markdown
 # ALU Intercampus Connect
 
