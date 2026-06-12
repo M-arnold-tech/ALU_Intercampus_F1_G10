@@ -1,1 +1,0 @@
-# ALU_Intercampus_F1_G10
